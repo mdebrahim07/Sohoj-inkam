@@ -1,0 +1,110 @@
+<!DOCTYPE html><html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ShohojWorld-style Telegram WebApp</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- Monetag SDK -->
+  <script src='//libtl.com/sdk.js' data-zone='9692678' data-sdk='show_9692678'></script>
+  <style>
+    /* ... (আগের সব style একই থাকবে) ... */
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <!-- ... (আগের সব header, section, tasks একই থাকবে) ... -->
+    <div class="section">
+      <div class="section-head"><h3>Watch Ads & Earn</h3></div>
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-tab="quick">Quick Ads ⚡</button>
+        <button class="tab" data-tab="mega">Mega Ads 🔥</button>
+        <button class="tab" data-tab="boost">Boost Ads 🧪</button>
+      </div><div class="box" id="tab-quick">
+    <div class="row">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <strong>Daily Progress</strong><strong id="dailyCount">1/30</strong>
+        </div>
+        <div class="progress"><div class="bar" id="dailyBar" style="width:3.33%"></div></div>
+        <div class="kpi"><span id="dailyLeft">29 ads remaining today</span></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <strong>Hourly Progress</strong><strong id="hourlyCount">1/20</strong>
+        </div>
+        <div class="progress"><div class="bar" id="hourlyBar" style="width:5%"></div></div>
+        <div class="kpi"><span id="hourlyLeft">19 ads remaining this hour</span></div>
+      </div>
+      <button id="watchBtn" class="cta">▶ Watch Ad Now</button>
+    </div>
+  </div>
+  
+  <!-- অন্যান্য ট্যাব যেমন ছিল -->
+</div>
+
+  </div>  <!-- Bottom nav যেমন ছিল -->  <nav aria-label="bottom navigation">
+    <!-- ... -->
+  </nav>  <script>
+    const tg = window.Telegram ? window.Telegram.WebApp : null;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+      const user = tg.initDataUnsafe?.user;
+      if (user) {
+        document.getElementById('userId').textContent = user.id;
+      }
+    } else {
+      document.getElementById('userId').textContent = '7240466158';
+    }
+
+    document.querySelectorAll('.tab').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        const name = btn.dataset.tab;
+        document.querySelectorAll('.box').forEach(b=>b.classList.add('hidden'));
+        document.getElementById('tab-'+name).classList.remove('hidden');
+      })
+    })
+
+    let daily=1, hourly=1;
+    function render(){
+      const dailyPct = Math.min(100, (daily/30)*100);
+      const hourlyPct = Math.min(100, (hourly/20)*100);
+      document.getElementById('dailyCount').textContent = `${daily}/30`;
+      document.getElementById('hourlyCount').textContent = `${hourly}/20`;
+      document.getElementById('dailyBar').style.width = dailyPct + '%';
+      document.getElementById('hourlyBar').style.width = hourlyPct + '%';
+      document.getElementById('dailyLeft').textContent = (30-daily) + ' ads remaining today';
+      document.getElementById('hourlyLeft').textContent = (20-hourly) + ' ads remaining this hour';
+    }
+    render();
+
+    document.getElementById('watchBtn').addEventListener('click', async ()=>{
+      // Monetag Ad trigger
+      try {
+        if(window.show_9692678){
+          window.show_9692678();
+        }
+      } catch(e){
+        console.error('Monetag ad failed', e);
+      }
+
+      // Update progress
+      daily = Math.min(30, daily+1);
+      hourly = Math.min(20, hourly+1);
+      render();
+
+      if(tg){
+        try { tg.HapticFeedback.impactOccurred('medium'); } catch(e) {}
+        tg.showPopup({
+          title: 'Ad watched',
+          message: 'You earned +0.10 DGB',
+          buttons: [{ type:'ok' }]
+        });
+      } else {
+        alert('Ad watched! +0.10 DGB');
+      }
+    })
+  </script></body>
+</html>
